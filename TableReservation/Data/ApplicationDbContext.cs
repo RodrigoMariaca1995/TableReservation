@@ -13,5 +13,14 @@ namespace TableReservation.Data
             : base(options)
         {
         }
+
+        public DbSet<Reservation> Reservations { get; set; }
+        public DbSet<ReservedTable> ReservedTables { get; set; }
+        public DbSet<Table> Tables { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+        }
     }
 }
