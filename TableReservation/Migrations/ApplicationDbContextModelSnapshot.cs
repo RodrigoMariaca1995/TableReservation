@@ -3,17 +3,15 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TableReservation.Data;
 
-namespace TableReservation.Data.Migrations
+namespace TableReservation.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20211025183359_updateReservation")]
-    partial class updateReservation
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -252,9 +250,6 @@ namespace TableReservation.Data.Migrations
                     b.Property<DateTime>("ResDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("ResId");
 
                     b.HasIndex("CustomerId");
@@ -264,18 +259,18 @@ namespace TableReservation.Data.Migrations
 
             modelBuilder.Entity("TableReservation.Models.ReservedTable", b =>
                 {
-                    b.Property<int>("ResTabId")
+                    b.Property<int>("ResTableId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ReservationResId")
+                    b.Property<int>("ReservationResId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("TablesTableId")
+                    b.Property<int>("TablesTableId")
                         .HasColumnType("int");
 
-                    b.HasKey("ResTabId");
+                    b.HasKey("ResTableId");
 
                     b.HasIndex("ReservationResId");
 
@@ -363,11 +358,15 @@ namespace TableReservation.Data.Migrations
                 {
                     b.HasOne("TableReservation.Models.Reservation", "Reservation")
                         .WithMany("ReservedTables")
-                        .HasForeignKey("ReservationResId");
+                        .HasForeignKey("ReservationResId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("TableReservation.Models.Table", "Tables")
                         .WithMany()
-                        .HasForeignKey("TablesTableId");
+                        .HasForeignKey("TablesTableId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Reservation");
 

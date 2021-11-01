@@ -10,7 +10,9 @@ namespace TableReservation.Models
     public class ReservedTable
     {
         [Key]
-        public int ResTabId { get; set; }
+        public int ResTableId { get; set; }
+        public int ReservationResId { get; set; }
+        public int TablesTableId { get; set; }
         public Table Tables { get; set; }
         public Reservation Reservation { get; set; }
     }

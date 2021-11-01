@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using TableReservation.Data;
 using TableReservation.Models;
@@ -32,7 +33,7 @@ namespace TableReservation.Controllers
 
             if(User.Identity.IsAuthenticated)
             {
-                reservations = reservations.Where(s => s.UserId == customer && s.ResDate > curDate); //set the list of reservations to current user and only shows future reservations
+                reservations = reservations.Where(s => s.CustomerId == customer && s.ResDate > curDate); //set the list of reservations to current user and only shows future reservations
             }
             else
             {
@@ -71,18 +72,40 @@ namespace TableReservation.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ResId,UserId,ResDate,PartySize")] Reservation reservation)
+        public async Task<IActionResult> Create([Bind("ResDate,PartySize")] Reservation reservation,  ReservedTable reservedTable)
         {
             //System.Security.Claims.ClaimsPrincipal currentUser = this.User;
             if (User.Identity.IsAuthenticated)
             {
                 var customer = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                reservation.UserId = customer;
+                reservation.CustomerId = customer;
             }
             
             if (ModelState.IsValid)
             {
                 _context.Add(reservation);
+                await _context.SaveChangesAsync();
+                var partSize = _context.Reservations.OrderByDescending(p => p.ResId).FirstOrDefault().PartySize;
+                //const string connection = @"Server = (localdb)\\mssqllocaldb; Database = CU - 1; Trusted_Connection = True; MultipleActiveResultSets = true";
+                //using (var conn = new SqlConnection(connection))
+                //{
+                //    var qry = "select * from Tables, ReservedTables, Reservations where Tables.TableId != ReservedTables.TablesTableId AND ReservedTables.ReservationResId = Reservations.ResId AND  Reservations.ResDate = '2021-11-10 15:40:00.0000000'";
+                //    var cmd = new SqlCommand(qry, conn);
+                //    conn.Open();
+                //    SqlDataReader rdr = cmd.ExecuteReader();
+
+                //    if(rdr.HasRows)
+                //    {
+                //        while(rdr.Read())
+                //        {
+                //            Console.WriteLine("{0}", rdr.GetString(0));
+                //        }
+                //    }
+                //}
+                //var numTable2 = _context.Tables.Where(p => p.Capacity == 2).Count();
+                reservedTable.ReservationResId = _context.Reservations.OrderByDescending(p => p.ResId).FirstOrDefault().ResId;
+                reservedTable.TablesTableId = 1;
+                _context.Add(reservedTable);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -121,7 +144,7 @@ namespace TableReservation.Controllers
             if (User.Identity.IsAuthenticated)
             {
                 var customer = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                reservation.UserId = customer;
+                reservation.CustomerId = customer;
             }
 
             if (ModelState.IsValid)
@@ -180,5 +203,8 @@ namespace TableReservation.Controllers
         {
             return _context.Reservations.Any(e => e.ResId == id);
         }
+
+        
+
     }
 }

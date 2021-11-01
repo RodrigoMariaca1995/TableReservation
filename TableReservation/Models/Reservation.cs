@@ -11,7 +11,7 @@ namespace TableReservation.Models
     {
         [Key]
         public int ResId { get; set; }
-        public string UserId { get; set; }
+        public string CustomerId { get; set; }
         public DateTime ResDate { get; set; }
         public int PartySize { get; set; }
         public ICollection<ReservedTable> ReservedTables { get; set; }

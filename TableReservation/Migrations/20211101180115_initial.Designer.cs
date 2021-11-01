@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TableReservation.Data;
 
-namespace TableReservation.Data.Migrations
+namespace TableReservation.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20211020185454_NewTables")]
-    partial class NewTables
+    [Migration("20211101180115_initial")]
+    partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -252,9 +252,6 @@ namespace TableReservation.Data.Migrations
                     b.Property<DateTime>("ResDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("ResId");
 
                     b.HasIndex("CustomerId");
@@ -264,18 +261,18 @@ namespace TableReservation.Data.Migrations
 
             modelBuilder.Entity("TableReservation.Models.ReservedTable", b =>
                 {
-                    b.Property<int>("ResTabId")
+                    b.Property<int>("ResTableId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ReservationResId")
+                    b.Property<int>("ReservationResId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("TablesTableId")
+                    b.Property<int>("TablesTableId")
                         .HasColumnType("int");
 
-                    b.HasKey("ResTabId");
+                    b.HasKey("ResTableId");
 
                     b.HasIndex("ReservationResId");
 
@@ -363,11 +360,15 @@ namespace TableReservation.Data.Migrations
                 {
                     b.HasOne("TableReservation.Models.Reservation", "Reservation")
                         .WithMany("ReservedTables")
-                        .HasForeignKey("ReservationResId");
+                        .HasForeignKey("ReservationResId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("TableReservation.Models.Table", "Tables")
                         .WithMany()
-                        .HasForeignKey("TablesTableId");
+                        .HasForeignKey("TablesTableId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Reservation");
 
