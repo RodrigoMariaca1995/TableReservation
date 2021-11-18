@@ -14,7 +14,7 @@ namespace TableReservation.Models
         public string CustomerId { get; set; }
         public DateTime ResDate { get; set; }
         public int PartySize { get; set; }
-        public ICollection<ReservedTable> ReservedTables { get; set; }
+        public int TotalSeats { get; set; }
         public Customer Customer { get; set; }
     }
 }

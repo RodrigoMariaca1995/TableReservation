@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -31,15 +32,17 @@ namespace TableReservation.Controllers
             var reservations = _context.Reservations.Include(r => r.Customer).AsNoTracking();
             var curDate = DateTime.Now;
 
-            if(User.Identity.IsAuthenticated)
+            if (User.Identity.IsAuthenticated)
             {
                 reservations = reservations.Where(s => s.CustomerId == customer && s.ResDate > curDate); //set the list of reservations to current user and only shows future reservations
+               
             }
             else
             {
                 //reservations = reservations.Where(s => s.UserId == ""); //might want to change this in the future
             }
             return View(await reservations.ToListAsync());
+     
             //return View(await _context.Reservations.ToListAsync());
         }
 
@@ -72,47 +75,138 @@ namespace TableReservation.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ResDate,PartySize")] Reservation reservation,  ReservedTable reservedTable)
+        public async Task<IActionResult> Create([Bind("ResDate,PartySize")] Reservation reservation)
         {
+            
             //System.Security.Claims.ClaimsPrincipal currentUser = this.User;
             if (User.Identity.IsAuthenticated)
             {
                 var customer = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 reservation.CustomerId = customer;
             }
-            
             if (ModelState.IsValid)
             {
-                _context.Add(reservation);
-                await _context.SaveChangesAsync();
-                var partSize = _context.Reservations.OrderByDescending(p => p.ResId).FirstOrDefault().PartySize;
-                //const string connection = @"Server = (localdb)\\mssqllocaldb; Database = CU - 1; Trusted_Connection = True; MultipleActiveResultSets = true";
-                //using (var conn = new SqlConnection(connection))
-                //{
-                //    var qry = "select * from Tables, ReservedTables, Reservations where Tables.TableId != ReservedTables.TablesTableId AND ReservedTables.ReservationResId = Reservations.ResId AND  Reservations.ResDate = '2021-11-10 15:40:00.0000000'";
-                //    var cmd = new SqlCommand(qry, conn);
-                //    conn.Open();
-                //    SqlDataReader rdr = cmd.ExecuteReader();
 
-                //    if(rdr.HasRows)
-                //    {
-                //        while(rdr.Read())
-                //        {
-                //            Console.WriteLine("{0}", rdr.GetString(0));
-                //        }
-                //    }
-                //}
-                //var numTable2 = _context.Tables.Where(p => p.Capacity == 2).Count();
-                reservedTable.ReservationResId = _context.Reservations.OrderByDescending(p => p.ResId).FirstOrDefault().ResId;
-                reservedTable.TablesTableId = 1;
-                _context.Add(reservedTable);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                var reservationDate = reservation.ResDate;
+                var partySize = reservation.PartySize;
+
+                var restaurantCapacity = from res in _context.Reservations
+                                         where res.ResDate == reservationDate
+                                         select res.TotalSeats;
+
+                List<int> tables = new List<int>() { 2, 2, 2, 4, 4, 4, 6, 6, 6 };
+                int total = tables.Sum();
+                System.Diagnostics.Debug.WriteLine(total);
+                int currentCapacity = 0;
+
+                foreach (var i in restaurantCapacity)
+                {
+                    currentCapacity += i;
+                }
+
+                if ((total - currentCapacity) < partySize)
+                {
+                    return View(reservation);
+                }
+                else
+                {
+                    foreach (var i in restaurantCapacity)
+                    {
+                        int temp = TablesReserved(ref tables, i);
+                    }
+                    foreach (var i in tables)
+                    {
+                        System.Diagnostics.Debug.WriteLine(i);
+                    }
+
+                    int capacity = TablesReserved(ref tables, partySize);
+
+                    reservation.TotalSeats = capacity;
+                    _context.Add(reservation);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+
             }
             return View(reservation);
         }
 
+
         // GET: Reservations/Edit/5
+
+        public int TablesReserved(ref List<int> tables, int partySize)
+        {
+            int capacity = 0;
+            while(capacity < partySize)
+            {
+                if(partySize > 4)
+                {
+                    if (tables.Exists(x => x == 6))
+                    {
+                        int index = tables.FindIndex(x => x == 6);
+                        tables.RemoveAt(index);
+                        capacity += 6;
+                    }
+                    else if (tables.Exists(x => x == 4))
+                    {
+                        int index = tables.FindIndex(x => x == 4);
+                        tables.RemoveAt(index);
+                        capacity += 4;
+                    }
+                    else
+                    {
+                        int index = tables.FindIndex(x => x == 2);
+                        tables.RemoveAt(index);
+                        capacity += 2;
+                    }
+                }
+                else if (partySize > 2)
+                {
+                    if (tables.Exists(x => x == 4))
+                    {
+                        int index = tables.FindIndex(x => x == 4);
+                        tables.RemoveAt(index);
+                        capacity += 4;
+                    }
+                    else if (tables.Exists(x => x == 2))
+                    {
+                        int index = tables.FindIndex(x => x == 2);
+                        tables.RemoveAt(index);
+                        capacity += 2;
+                    }
+                    else
+                    {
+                        int index = tables.FindIndex(x => x == 6);
+                        tables.RemoveAt(index);
+                        capacity += 6;
+                    }
+                }
+                else
+                {
+                    if (tables.Exists(x => x == 2))
+                    {
+                        int index = tables.FindIndex(x => x == 2);
+                        tables.RemoveAt(index);
+                        capacity += 2;
+                    }
+                    else if (tables.Exists(x => x == 4))
+                    {
+                        int index = tables.FindIndex(x => x == 4);
+                        tables.RemoveAt(index);
+                        capacity += 4;
+                    }
+                    else
+                    {
+                        int index = tables.FindIndex(x => x == 6);
+                        tables.RemoveAt(index);
+                        capacity += 6;
+                    }
+                }
+
+            }
+            return capacity;
+        }
+
         public async Task<IActionResult> Edit(int? id)
         {
 
