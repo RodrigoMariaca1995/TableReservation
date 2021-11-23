@@ -1,3 +1,4 @@
+using AspNetCoreHero.ToastNotification;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -28,6 +29,13 @@ namespace TableReservation
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddNotyf(config=> 
+            {
+                config.DurationInSeconds = 10;
+                config.IsDismissable = true;
+                config.Position = NotyfPosition.TopCenter;
+                
+             });
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));

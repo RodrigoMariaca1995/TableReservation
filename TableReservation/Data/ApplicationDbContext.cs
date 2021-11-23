@@ -15,6 +15,7 @@ namespace TableReservation.Data
         }
 
         public DbSet<Reservation> Reservations { get; set; }
+        public DbSet<Customer> Customer { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

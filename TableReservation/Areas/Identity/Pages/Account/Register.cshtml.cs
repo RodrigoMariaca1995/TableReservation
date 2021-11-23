@@ -61,12 +61,16 @@ namespace TableReservation.Areas.Identity.Pages.Account
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
-
+            [Required]
+            [Display(Name = "First Name")]
             public string FirstName { get; set; }
+            [Required]
+            [Display(Name = "Last Name")]
             public string LastName { get; set; }
-            public string MailAddress { get; set; }
-            public string City { get; set; }
-            public string C_State { get; set; }
+            [Required]
+            [Display(Name = "Phone Number")]
+            [Phone]
+            public string Phone { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)
@@ -81,7 +85,7 @@ namespace TableReservation.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = new Customer { UserName = Input.Email, Email = Input.Email, FristName = Input.FirstName, LastName = Input.LastName, MailAddress = Input.MailAddress, City = Input.City, C_State = Input.C_State };
+                var user = new Customer { UserName = Input.Email, Email = Input.Email, FristName = Input.FirstName, LastName = Input.LastName, PhoneNumber = Input.Phone };
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {

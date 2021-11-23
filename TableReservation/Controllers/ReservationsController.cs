@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AspNetCoreHero.ToastNotification.Abstractions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -13,37 +14,50 @@ using TableReservation.Data;
 using TableReservation.Models;
 
 
+
 namespace TableReservation.Controllers
 {
+    
     public class ReservationsController : Microsoft.AspNetCore.Mvc.Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly INotyfService _notfy;
 
 
-        public ReservationsController(ApplicationDbContext context)
+        public ReservationsController(ApplicationDbContext context, INotyfService notfy)
         {
             _context = context;
+            _notfy = notfy;
         }
 
         // GET: Reservations
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
             var customer = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var reservations = _context.Reservations.Include(r => r.Customer).AsNoTracking();
             var curDate = DateTime.Now;
-
+       
             if (User.Identity.IsAuthenticated)
             {
-                reservations = reservations.Where(s => s.CustomerId == customer && s.ResDate > curDate); //set the list of reservations to current user and only shows future reservations
+                //set the list of reservations to current user and only shows future reservations
+                reservations = reservations.Where(s => s.CustomerId == customer && s.ResDate > curDate); 
                
             }
             else
             {
-                //reservations = reservations.Where(s => s.UserId == ""); //might want to change this in the future
+                //set the list of reservations to the search keyword
+                ViewData["CurrentFilter"] = searchString;
+                reservations = reservations.Where(s => s.Email.Contains(searchString)
+                                           || s.Email.Contains(searchString));
+
+
+                //notification 
+                _notfy.Information("Please Consider Registering!", 5);
+
             }
             return View(await reservations.ToListAsync());
      
-            //return View(await _context.Reservations.ToListAsync());
+
         }
 
         // GET: Reservations/Details/5
@@ -75,23 +89,94 @@ namespace TableReservation.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ResDate,PartySize")] Reservation reservation)
+        public async Task<IActionResult> Create([Bind("ResDate, PartySize")] Reservation reservation)
         {
-            
-            //System.Security.Claims.ClaimsPrincipal currentUser = this.User;
-            if (User.Identity.IsAuthenticated)
-            {
-                var customer = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                reservation.CustomerId = customer;
-            }
             if (ModelState.IsValid)
             {
+                
+                var endHour = reservation.ResDate.AddHours(1.5);
+                var startHour = reservation.ResDate.AddHours(-1.5);
 
-                var reservationDate = reservation.ResDate;
                 var partySize = reservation.PartySize;
 
                 var restaurantCapacity = from res in _context.Reservations
-                                         where res.ResDate == reservationDate
+                                         where res.ResDate > startHour && res.ResDate < endHour
+                                         select res.TotalSeats;
+
+                List<int> tables = new List<int>() { 2, 2, 2, 4, 4, 4, 6, 6, 6 };
+                int total = tables.Sum();
+                System.Diagnostics.Debug.WriteLine(total);
+                int currentCapacity = 0;
+
+                foreach (var i in restaurantCapacity)
+                {
+                    currentCapacity += i;
+                }
+
+                if ((total - currentCapacity) < partySize)
+                {
+                    _notfy.Error("No reservations available for this time", 3);
+                    return View(reservation);
+                }
+                else
+                {
+                    reservation.CustomerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                    var curUser = from user in _context.Customer where user.Id == reservation.CustomerId select user;
+
+                    foreach (var i in curUser)
+                    {
+                        reservation.FName = i.FristName;
+                        reservation.LName = i.LastName;
+                        reservation.Phone = i.PhoneNumber;
+                        reservation.Email = i.Email;
+                    }
+
+                    foreach (var i in restaurantCapacity)
+                    {
+                        int temp = TablesReserved(ref tables, i);
+                    }
+                    foreach (var i in tables)
+                    {
+                        System.Diagnostics.Debug.WriteLine(i);
+                    }
+
+                    int capacity = TablesReserved(ref tables, partySize);
+
+                    reservation.TotalSeats = capacity;
+                    _context.Add(reservation);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+
+            }
+            return View(reservation);
+        }
+
+
+        public IActionResult GCreate( )
+        {
+            return View();
+        }
+
+        // POST: Reservations/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GCreate([Bind("FName, LName, Phone, Email, ResDate, PartySize")] Reservation reservation)
+        {
+
+            if (ModelState.IsValid)
+            {
+
+                var endHour = reservation.ResDate.AddHours(1.5);
+                var startHour = reservation.ResDate.AddHours(-1.5);
+
+                var partySize = reservation.PartySize;
+
+                var restaurantCapacity = from res in _context.Reservations
+                                         where res.ResDate > startHour && res.ResDate < endHour
                                          select res.TotalSeats;
 
                 List<int> tables = new List<int>() { 2, 2, 2, 4, 4, 4, 6, 6, 6 };
@@ -239,10 +324,20 @@ namespace TableReservation.Controllers
             {
                 var customer = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 reservation.CustomerId = customer;
+                var curUser = from user in _context.Customer where user.Id == reservation.CustomerId select user;
+
+                foreach (var i in curUser)
+                {
+                    reservation.FName = i.FristName;
+                    reservation.LName = i.LastName;
+                    reservation.Phone = i.PhoneNumber;
+                    reservation.Email = i.Email;
+                }
             }
 
             if (ModelState.IsValid)
             {
+
                 try
                 {
                     _context.Update(reservation);
@@ -299,6 +394,10 @@ namespace TableReservation.Controllers
         }
 
         
+
+        
+
+
 
     }
 }

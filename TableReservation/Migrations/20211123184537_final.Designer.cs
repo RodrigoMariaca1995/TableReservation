@@ -10,8 +10,8 @@ using TableReservation.Data;
 namespace TableReservation.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20211118163250_updateReservation")]
-    partial class updateReservation
+    [Migration("20211123184537_final")]
+    partial class final
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -164,12 +164,6 @@ namespace TableReservation.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
-                    b.Property<string>("C_State")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("City")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -192,9 +186,6 @@ namespace TableReservation.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("MailAddress")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -246,8 +237,20 @@ namespace TableReservation.Migrations
                     b.Property<string>("CustomerId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("PartySize")
                         .HasColumnType("int");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("ResDate")
                         .HasColumnType("datetime2");

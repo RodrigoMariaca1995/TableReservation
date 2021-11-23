@@ -33,11 +33,13 @@ namespace TableReservation.Areas.Identity.Pages.Account.Manage
 
         public class InputModel
         {
+            [Required]
+            [Display(Name = "First Name")]
             public string FirstName { get; set; }
+            [Required]
+            [Display(Name = "Last Name")]
             public string LastName { get; set; }
-            public string Address { get; set; }
-            public string City { get; set; }
-            public string C_State { get; set; }
+            [Required]
             [Phone]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
@@ -49,9 +51,7 @@ namespace TableReservation.Areas.Identity.Pages.Account.Manage
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
             var firstName = user.FristName;
             var lastName = user.LastName;
-            var address = user.MailAddress;
-            var city = user.City;
-            var c_State = user.C_State;
+
             
 
             Username = userName;
@@ -62,9 +62,6 @@ namespace TableReservation.Areas.Identity.Pages.Account.Manage
                 PhoneNumber = phoneNumber,
                 FirstName = firstName,
                 LastName = lastName,
-                Address = address,
-                City = city,
-                C_State = c_State
             };
         }
 
@@ -119,28 +116,6 @@ namespace TableReservation.Areas.Identity.Pages.Account.Manage
                 user.LastName = Input.LastName;
                 await _userManager.UpdateAsync(user);
             }
-
-            var address = user.MailAddress;
-            if(Input.Address != address)
-            {
-                user.MailAddress = Input.Address;
-                await _userManager.UpdateAsync(user);
-            }
-
-            var city = user.City;
-            if(Input.City != city)
-            {
-                user.City = Input.City;
-                await _userManager.UpdateAsync(user);
-            }
-
-            var c_State = user.C_State;
-            if(Input.C_State != c_State)
-            {
-                user.C_State = Input.C_State;
-                await _userManager.UpdateAsync(user);
-            }
-
 
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";
