@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace TableReservation.Migrations
 {
-    public partial class index : Migration
+    public partial class initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -168,10 +168,10 @@ namespace TableReservation.Migrations
                     ResDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PartySize = table.Column<int>(type: "int", nullable: false),
                     TotalSeats = table.Column<int>(type: "int", nullable: false),
-                    CardNumber = table.Column<int>(type: "int", nullable: false),
-                    CVV = table.Column<int>(type: "int", nullable: false),
-                    month = table.Column<int>(type: "int", nullable: false),
-                    year = table.Column<int>(type: "int", nullable: false)
+                    CardNumber = table.Column<int>(type: "int", nullable: true),
+                    CVV = table.Column<int>(type: "int", nullable: true),
+                    month = table.Column<int>(type: "int", nullable: true),
+                    year = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
