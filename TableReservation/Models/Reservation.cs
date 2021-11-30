@@ -29,10 +29,10 @@ namespace TableReservation.Models
         public int PartySize { get; set; }
         public int TotalSeats { get; set; }
         public Customer Customer { get; set; }
-        public int CardNumber { get; set; }
-        public int CVV { get; set; }
-        public int month { get; set; }
-        public int year { get; set; }
+        public int? CardNumber { get; set; }
+        public int? CVV { get; set; }
+        public int? month { get; set; }
+        public int? year { get; set; }
 
     }
 }
