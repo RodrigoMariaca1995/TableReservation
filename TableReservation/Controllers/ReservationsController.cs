@@ -97,11 +97,19 @@ namespace TableReservation.Controllers
                 var endHour = reservation.ResDate.AddHours(1.5);
                 var startHour = reservation.ResDate.AddHours(-1.5);
 
+                var prevDateS = reservation.ResDate.Date.AddYears(-1);
+                var prevDateE = reservation.ResDate.Date.AddYears(-1).AddDays(1);
+
                 var partySize = reservation.PartySize;
 
                 var restaurantCapacity = from res in _context.Reservations
                                          where res.ResDate > startHour && res.ResDate < endHour
                                          select res.TotalSeats;
+                var prevRes = from res in _context.Reservations
+                               where res.ResDate >= prevDateS && res.ResDate <= prevDateE
+                              select res.PartySize;
+
+                
 
                 List<int> tables = new List<int>() { 2, 2, 2, 4, 4, 4, 6, 6, 6 };
                 int total = tables.Sum();
@@ -113,6 +121,17 @@ namespace TableReservation.Controllers
                     currentCapacity += i;
                 }
 
+                int prevCap = 0;
+                foreach (var i in prevRes)
+                {
+                    prevCap += i;
+                }
+
+                if (prevCap > 100)
+                {
+                    _notfy.Error("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information", 3);
+                    return View(reservation);
+                }
                 if ((total - currentCapacity) < partySize)
                 {
                     _notfy.Error("No reservations available for this time", 3);
@@ -173,6 +192,9 @@ namespace TableReservation.Controllers
                 var endHour = reservation.ResDate.AddHours(1.5);
                 var startHour = reservation.ResDate.AddHours(-1.5);
 
+                var prevDateS = reservation.ResDate.Date.AddYears(-1);
+                var prevDateE = reservation.ResDate.Date.AddYears(-1).AddDays(1);
+
                 var partySize = reservation.PartySize;
 
                 var restaurantCapacity = from res in _context.Reservations
@@ -183,6 +205,22 @@ namespace TableReservation.Controllers
                 int total = tables.Sum();
                 System.Diagnostics.Debug.WriteLine(total);
                 int currentCapacity = 0;
+
+                var prevRes = from res in _context.Reservations
+                              where res.ResDate >= prevDateS && res.ResDate <= prevDateE
+                              select res.PartySize;
+
+                int prevCap = 0;
+                foreach (var i in prevRes)
+                {
+                    prevCap += i;
+                }
+
+                if (prevCap > 100)
+                {
+                    _notfy.Error("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information", 3);
+                    return View(reservation);
+                }
 
                 foreach (var i in restaurantCapacity)
                 {
@@ -392,12 +430,6 @@ namespace TableReservation.Controllers
         {
             return _context.Reservations.Any(e => e.ResId == id);
         }
-
-        
-
-        
-
-
 
     }
 }
