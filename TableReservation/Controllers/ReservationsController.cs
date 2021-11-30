@@ -94,7 +94,23 @@ namespace TableReservation.Controllers
         {
             if (ModelState.IsValid)
             {
-                
+                // restrict date and time
+                DateTime date1 = reservation.ResDate;
+                DateTime date2 = DateTime.Now;
+                int compareResult = DateTime.Compare(date1, date2);
+                int hourInt0to23 = date1.Hour;
+
+                if (compareResult < 0)
+                {
+                    _notfy.Information("Please enter a date in the future!", 5);
+                    return View(reservation);
+                }
+                if (hourInt0to23 < 9 || hourInt0to23 > 20)
+                {
+                    _notfy.Information("Please enter a time during opening hours (9 AM - 8 PM)", 5);
+                    return View(reservation);
+                }
+
                 var endHour = reservation.ResDate.AddHours(1.5);
                 var startHour = reservation.ResDate.AddHours(-1.5);
 
@@ -221,6 +237,22 @@ namespace TableReservation.Controllers
 
             if (ModelState.IsValid)
             {
+                // restrict date and time
+                DateTime date1 = reservation.ResDate;
+                DateTime date2 = DateTime.Now;
+                int compareResult = DateTime.Compare(date1, date2);
+                int hourInt0to23 = date1.Hour;
+
+                if (compareResult < 0)
+                {
+                    _notfy.Information("Please enter a date in the future!", 5);
+                    return View(reservation);
+                }
+                if (hourInt0to23 < 9 || hourInt0to23 > 20)
+                {
+                    _notfy.Information("Please enter a time during opening hours (9 AM - 8 PM)", 5);
+                    return View(reservation);
+                }
 
                 var endHour = reservation.ResDate.AddHours(1.5);
                 var startHour = reservation.ResDate.AddHours(-1.5);
