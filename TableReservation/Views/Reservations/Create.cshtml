@@ -24,6 +24,27 @@
                 <input asp-for="PartySize" class="form-control" />
                 <span asp-validation-for="PartySize" class="text-danger"></span>
             </div>
+            <h5>$10 hold fee if high traffic day</h5>
+            <div class="form-group" id="card-number-field">
+                <label asp-for="CardNumber" for="cardNumber">Card Number</label>
+                <input asp-for="CardNumber" type="text" class="form-control" id="cardNumber">
+                <span asp-validation-for="CardNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group CVV">
+                <label asp-for="CVV" for="cvv">CVV</label>
+                <input asp-for="CVV" type="text" class="form-control" id="cvv">
+                <span asp-validation-for="CVV" class="text-danger"></span>
+            </div>
+            <div class="form-group month">
+                <label asp-for="month" for="month">Expiration Month</label>
+                <input asp-for="month" type="text" class="form-control" id="month">
+                <span asp-validation-for="month" class="text-danger"></span>
+            </div>
+            <div class="form-group year">
+                <label asp-for="year" for="year">Expiration Year</label>
+                <input asp-for="year" type="text" class="form-control" id="year">
+                <span asp-validation-for="year" class="text-danger"></span>
+            </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
