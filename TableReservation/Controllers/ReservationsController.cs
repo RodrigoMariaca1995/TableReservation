@@ -36,7 +36,8 @@ namespace TableReservation.Controllers
             var customer = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var reservations = _context.Reservations.Include(r => r.Customer).AsNoTracking();
             var curDate = DateTime.Now;
-       
+
+            
             if (User.Identity.IsAuthenticated)
             {
                 //set the list of reservations to current user and only shows future reservations
@@ -89,7 +90,7 @@ namespace TableReservation.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ResDate, PartySize")] Reservation reservation)
+        public async Task<IActionResult> Create([Bind("ResDate, PartySize, CardNumber, CVV, month, year")] Reservation reservation)
         {
             if (ModelState.IsValid)
             {
@@ -112,12 +113,42 @@ namespace TableReservation.Controllers
                 {
                     currentCapacity += i;
                 }
+                //High Traffic Day
+                //bool highTraffic;
+
+                DateTime christmas = new DateTime(2021, 12, 25);
+                DateTime christmasEve = new DateTime(2021, 12, 24);
+                DateTime fourth = new DateTime(2022, 7, 4);
+                DateTime newYears = new DateTime(2022, 1, 1);
+                DateTime newYearsEve = new DateTime(2022, 12, 31);
+                int result = DateTime.Compare(christmas, reservation.ResDate.Date);
+                int result1 = DateTime.Compare(christmasEve, reservation.ResDate.Date);
+                int result2 = DateTime.Compare(fourth, reservation.ResDate.Date);
+                int result3 = DateTime.Compare(newYears, reservation.ResDate.Date);
+                int result4 = DateTime.Compare(newYearsEve, reservation.ResDate.Date);
+
+                if (result == 0 | result1 == 0 | result2 == 0 | result3 == 0 | result4 == 0 | reservation.ResDate.DayOfWeek == DayOfWeek.Sunday | reservation.ResDate.DayOfWeek == DayOfWeek.Saturday)
+                {
+                    _notfy.Information("Hold Fee Required For High Traffic Days", 5);
+                    return View(reservation);
+                }
+
+                //if (reservation.ResDate.DayOfWeek == DayOfWeek.Saturday | reservation.ResDate.DayOfWeek == DayOfWeek.Sunday | reservation.ResDate.CompareTo == )
+                //{
+                //    _notfy.Information("Hold Fee Required For High Traffic Days", 5);
+                //    highTraffic = true;
+                //}
+                //else
+                //{
+                //    highTraffic = false;
+                //}
 
                 if ((total - currentCapacity) < partySize)
                 {
                     _notfy.Error("No reservations available for this time", 3);
                     return View(reservation);
                 }
+                
                 else
                 {
                     reservation.CustomerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -131,7 +162,9 @@ namespace TableReservation.Controllers
                         reservation.Phone = i.PhoneNumber;
                         reservation.Email = i.Email;
                     }
-
+                    //add high traffic fee here
+                    //if (highTraffic === true)
+                    //insert hold fee
                     foreach (var i in restaurantCapacity)
                     {
                         int temp = TablesReserved(ref tables, i);
@@ -164,7 +197,7 @@ namespace TableReservation.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> GCreate([Bind("FName, LName, Phone, Email, ResDate, PartySize")] Reservation reservation)
+        public async Task<IActionResult> GCreate([Bind("FName, LName, Phone, Email, ResDate, PartySize, CardNumber, CVV, month, year")] Reservation reservation)
         {
 
             if (ModelState.IsValid)
@@ -187,6 +220,23 @@ namespace TableReservation.Controllers
                 foreach (var i in restaurantCapacity)
                 {
                     currentCapacity += i;
+                }
+
+                DateTime christmas = new DateTime(2021, 12, 25);
+                DateTime christmasEve = new DateTime(2021, 12, 24);
+                DateTime fourth = new DateTime(2022, 7, 4);
+                DateTime newYears = new DateTime(2022, 1, 1);
+                DateTime newYearsEve = new DateTime(2022, 12, 31);
+                int result = DateTime.Compare(christmas, reservation.ResDate.Date);
+                int result1 = DateTime.Compare(christmasEve, reservation.ResDate.Date);
+                int result2 = DateTime.Compare(fourth, reservation.ResDate.Date);
+                int result3 = DateTime.Compare(newYears, reservation.ResDate.Date);
+                int result4 = DateTime.Compare(newYearsEve, reservation.ResDate.Date);
+
+                if (result == 0 | result1 == 0 | result2 == 0 | result3 == 0 | result4 == 0 | reservation.ResDate.DayOfWeek == DayOfWeek.Sunday | reservation.ResDate.DayOfWeek == DayOfWeek.Saturday)
+                {
+                    _notfy.Information("Hold Fee Required For High Traffic Days", 5);
+                    return View(reservation);
                 }
 
                 if ((total - currentCapacity) < partySize)
