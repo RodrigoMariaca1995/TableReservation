@@ -1,7 +1,48 @@
 ﻿
 @{
-        ViewData["Title"] = "Privacy Policy";
+        ViewData["Title"] = "Contact The Founders Here";
     }
-    <h1>@ViewData["Title"]</h1>
+    <h3>@ViewData["Title"]</h3>
+    <style>
+        .cont {
+            padding: 0 10px 0 0;
+        }
+        .container1 {
+            
+        }
+        input[type=text], select, textarea {
+            width: 100%; /* Full width */
+            padding: 12px; /* Some padding */
+            border: 1px solid #ccc; /* Gray border */
+            border-radius: 4px; /* Rounded borders */
+            box-sizing: border-box; /* Make sure that padding and width stays in place */
+            margin-top: 6px; /* Add a top margin */
+            margin-bottom: 16px; /* Bottom margin */
+            resize: vertical /* Allow the user to vertically resize the textarea (not horizontally) */
+        }
+        input[type=submit]:hover {
+            background-color: #A9A9A9;
+        }
+    </style>
 
-    <p>Use this page to detail your site's privacy policy.</p>
+    <br /><br />
+   
+    <div class="container1">
+        <form action="mailto:jbkulzer@gmail.com mailto:rlmariac@cougarnet.uh.edu mailto:btnguy48@cougarnet.uh.edu">
+            <div class="cont">
+                <label for="fname">Your Name</label>
+                <input type="text" id="name" name="name" placeholder="Insert name..">
+            </div>
+            <div class="cont">
+                <label for="fname">Your Email</label>
+                <input type="text" id="email" name="email" placeholder="Insert email..">
+            </div>
+            <div class="cont">
+                <label for="subject">Subject</label>
+                <textarea id="subject" name="subject" placeholder="Write something.." style="height:200px"></textarea>
+
+                <input type="submit" value="Submit">
+            </div>
+
+        </form>
+    </div>

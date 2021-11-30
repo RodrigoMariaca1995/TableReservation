@@ -10,8 +10,8 @@ using TableReservation.Data;
 namespace TableReservation.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20211130005026_updateRes")]
-    partial class updateRes
+    [Migration("20211130213714_ind")]
+    partial class ind
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
