@@ -10,8 +10,8 @@ using TableReservation.Data;
 namespace TableReservation.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20211130003621_initial")]
-    partial class initial
+    [Migration("20211130192015_third")]
+    partial class third
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -234,10 +234,10 @@ namespace TableReservation.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("CVV")
+                    b.Property<int?>("CVV")
                         .HasColumnType("int");
 
-                    b.Property<int>("CardNumber")
+                    b.Property<int?>("CardNumber")
                         .HasColumnType("int");
 
                     b.Property<string>("CustomerId")
@@ -264,10 +264,10 @@ namespace TableReservation.Migrations
                     b.Property<int>("TotalSeats")
                         .HasColumnType("int");
 
-                    b.Property<int>("month")
+                    b.Property<int?>("month")
                         .HasColumnType("int");
 
-                    b.Property<int>("year")
+                    b.Property<int?>("year")
                         .HasColumnType("int");
 
                     b.HasKey("ResId");

@@ -85,44 +85,76 @@ namespace TableReservation.Controllers
             return View();
         }
 
-        // POST: Reservations/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ResDate, PartySize, CardNumber, CVV, month, year")] Reservation reservation)
         {
+            List<int> tables = new List<int>() { 2, 2, 2, 4, 4, 4, 6, 6, 6 };
+
             if (ModelState.IsValid)
             {
-                
+                /*####################### restrict date and time #######################*/
+                DateTime date1 = reservation.ResDate;
+                DateTime date2 = DateTime.Now;
+                int compareResult = DateTime.Compare(date1, date2);
+                int hourInt0to23 = date1.Hour;
+
+                if (compareResult < 0)
+                {
+                    _notfy.Information("Please enter a date in the future!", 5);
+                    return View(reservation);
+                }
+                if (hourInt0to23 < 9 || hourInt0to23 > 20)
+                {
+                    _notfy.Information("Please enter a time during opening hours (9 AM - 8 PM)", 5);
+                    return View(reservation);
+                }
+
+
+                /*####################### Check Restaurant Capacity #######################*/
                 var endHour = reservation.ResDate.AddHours(1.5);
-                var startHour = reservation.ResDate.AddHours(-1.5);
-
-                var prevDateS = reservation.ResDate.Date.AddYears(-1);
-                var prevDateE = reservation.ResDate.Date.AddYears(-1).AddDays(1);
-
-                var partySize = reservation.PartySize;
+                var startHour = reservation.ResDate.AddHours(-1.5);             
 
                 var restaurantCapacity = from res in _context.Reservations
                                          where res.ResDate > startHour && res.ResDate < endHour
                                          select res.TotalSeats;
-                var prevRes = from res in _context.Reservations
-                               where res.ResDate >= prevDateS && res.ResDate <= prevDateE
-                              select res.PartySize;
-
                 
-
-                List<int> tables = new List<int>() { 2, 2, 2, 4, 4, 4, 6, 6, 6 };
-                int total = tables.Sum();
-                System.Diagnostics.Debug.WriteLine(total);
                 int currentCapacity = 0;
-
                 foreach (var i in restaurantCapacity)
                 {
                     currentCapacity += i;
                 }
-                //High Traffic Day
-                //bool highTraffic;
+
+                var partySize = reservation.PartySize;
+                int total = tables.Sum();
+                if ((total - currentCapacity) < partySize)
+                {
+                    _notfy.Error("No reservations available for this time", 3);
+                    return View(reservation);
+                }
+
+
+                /*####################### Check High Capacity Day/ Holiday #######################*/
+
+                var prevDateS = reservation.ResDate.Date.AddYears(-1);
+                var prevDateE = reservation.ResDate.Date.AddYears(-1).AddDays(1);
+
+                var prevRes = from res in _context.Reservations
+                              where res.ResDate >= prevDateS && res.ResDate <= prevDateE
+                              select res.PartySize;
+
+                int prevCap = 0;
+                foreach (var i in prevRes)
+                {
+                    prevCap += i;
+                }
+
+                if (prevCap > 100)
+                {
+                    _notfy.Error("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information", 3);
+                    return View(reservation);
+                }
 
                 DateTime christmas = new DateTime(2021, 12, 25);
                 DateTime christmasEve = new DateTime(2021, 12, 24);
@@ -141,33 +173,9 @@ namespace TableReservation.Controllers
                     return View(reservation);
                 }
 
-                //if (reservation.ResDate.DayOfWeek == DayOfWeek.Saturday | reservation.ResDate.DayOfWeek == DayOfWeek.Sunday | reservation.ResDate.CompareTo == )
-                //{
-                //    _notfy.Information("Hold Fee Required For High Traffic Days", 5);
-                //    highTraffic = true;
-                //}
-                //else
-                //{
-                //    highTraffic = false;
-                //}
 
-                int prevCap = 0;
-                foreach (var i in prevRes)
-                {
-                    prevCap += i;
-                }
+                /*####################### If all validations are met create reservation #######################*/
 
-                if (prevCap > 100)
-                {
-                    _notfy.Error("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information", 3);
-                    return View(reservation);
-                }
-                if ((total - currentCapacity) < partySize)
-                {
-                    _notfy.Error("No reservations available for this time", 3);
-                    return View(reservation);
-                }
-                
                 else
                 {
                     reservation.CustomerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -181,21 +189,17 @@ namespace TableReservation.Controllers
                         reservation.Phone = i.PhoneNumber;
                         reservation.Email = i.Email;
                     }
-                    //add high traffic fee here
-                    //if (highTraffic === true)
-                    //insert hold fee
+                    
+                    //Update table list to account for existing reservations
                     foreach (var i in restaurantCapacity)
                     {
                         int temp = TablesReserved(ref tables, i);
                     }
-                    foreach (var i in tables)
-                    {
-                        System.Diagnostics.Debug.WriteLine(i);
-                    }
+        
+                    //calculate table combination to fit party size
+                    reservation.TotalSeats = TablesReserved(ref tables, partySize);
 
-                    int capacity = TablesReserved(ref tables, partySize);
-
-                    reservation.TotalSeats = capacity;
+                    //create reservation
                     _context.Add(reservation);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
@@ -218,26 +222,55 @@ namespace TableReservation.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GCreate([Bind("FName, LName, Phone, Email, ResDate, PartySize, CardNumber, CVV, month, year")] Reservation reservation)
         {
+            List<int> tables = new List<int>() { 2, 2, 2, 4, 4, 4, 6, 6, 6 };
 
             if (ModelState.IsValid)
             {
+                /*####################### restrict date and time #######################*/
+                DateTime date1 = reservation.ResDate;
+                DateTime date2 = DateTime.Now;
+                int compareResult = DateTime.Compare(date1, date2);
+                int hourInt0to23 = date1.Hour;
 
+                if (compareResult < 0)
+                {
+                    _notfy.Information("Please enter a date in the future!", 5);
+                    return View(reservation);
+                }
+                if (hourInt0to23 < 9 || hourInt0to23 > 20)
+                {
+                    _notfy.Information("Please enter a time during opening hours (9 AM - 8 PM)", 5);
+                    return View(reservation);
+                }
+
+
+                /*####################### Check Restaurant Capacity #######################*/
                 var endHour = reservation.ResDate.AddHours(1.5);
                 var startHour = reservation.ResDate.AddHours(-1.5);
-
-                var prevDateS = reservation.ResDate.Date.AddYears(-1);
-                var prevDateE = reservation.ResDate.Date.AddYears(-1).AddDays(1);
-
-                var partySize = reservation.PartySize;
 
                 var restaurantCapacity = from res in _context.Reservations
                                          where res.ResDate > startHour && res.ResDate < endHour
                                          select res.TotalSeats;
 
-                List<int> tables = new List<int>() { 2, 2, 2, 4, 4, 4, 6, 6, 6 };
-                int total = tables.Sum();
-                System.Diagnostics.Debug.WriteLine(total);
                 int currentCapacity = 0;
+                foreach (var i in restaurantCapacity)
+                {
+                    currentCapacity += i;
+                }
+
+                var partySize = reservation.PartySize;
+                int total = tables.Sum();
+                if ((total - currentCapacity) < partySize)
+                {
+                    _notfy.Error("No reservations available for this time", 3);
+                    return View(reservation);
+                }
+
+
+                /*####################### Check High Capacity Day/ Holiday #######################*/
+
+                var prevDateS = reservation.ResDate.Date.AddYears(-1);
+                var prevDateE = reservation.ResDate.Date.AddYears(-1).AddDays(1);
 
                 var prevRes = from res in _context.Reservations
                               where res.ResDate >= prevDateS && res.ResDate <= prevDateE
@@ -253,11 +286,6 @@ namespace TableReservation.Controllers
                 {
                     _notfy.Error("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information", 3);
                     return View(reservation);
-                }
-
-                foreach (var i in restaurantCapacity)
-                {
-                    currentCapacity += i;
                 }
 
                 DateTime christmas = new DateTime(2021, 12, 25);
@@ -277,24 +305,20 @@ namespace TableReservation.Controllers
                     return View(reservation);
                 }
 
-                if ((total - currentCapacity) < partySize)
-                {
-                    return View(reservation);
-                }
+
+                /*####################### If all validations are met create reservation #######################*/
                 else
                 {
+                    //Update table list to account for existing reservations
                     foreach (var i in restaurantCapacity)
                     {
                         int temp = TablesReserved(ref tables, i);
                     }
-                    foreach (var i in tables)
-                    {
-                        System.Diagnostics.Debug.WriteLine(i);
-                    }
 
-                    int capacity = TablesReserved(ref tables, partySize);
+                    //calculate table combination to fit party size
+                    reservation.TotalSeats = TablesReserved(ref tables, partySize);
 
-                    reservation.TotalSeats = capacity;
+                    //create reservation
                     _context.Add(reservation);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
@@ -305,32 +329,34 @@ namespace TableReservation.Controllers
         }
 
 
-        // GET: Reservations/Edit/5
-
+        /*####################### calculate table combination #######################*/
         public int TablesReserved(ref List<int> tables, int partySize)
         {
             int capacity = 0;
-            while(capacity < partySize)
+            while (partySize > 0)
             {
-                if(partySize > 4)
+                if (partySize > 4)
                 {
                     if (tables.Exists(x => x == 6))
                     {
                         int index = tables.FindIndex(x => x == 6);
                         tables.RemoveAt(index);
                         capacity += 6;
+                        partySize -= 6;
                     }
                     else if (tables.Exists(x => x == 4))
                     {
                         int index = tables.FindIndex(x => x == 4);
                         tables.RemoveAt(index);
                         capacity += 4;
+                        partySize -= 4;
                     }
                     else
                     {
                         int index = tables.FindIndex(x => x == 2);
                         tables.RemoveAt(index);
                         capacity += 2;
+                        partySize -= 2;
                     }
                 }
                 else if (partySize > 2)
@@ -340,18 +366,21 @@ namespace TableReservation.Controllers
                         int index = tables.FindIndex(x => x == 4);
                         tables.RemoveAt(index);
                         capacity += 4;
+                        partySize -= 4;
                     }
                     else if (tables.Exists(x => x == 2))
                     {
                         int index = tables.FindIndex(x => x == 2);
                         tables.RemoveAt(index);
                         capacity += 2;
+                        partySize -= 2;
                     }
                     else
                     {
                         int index = tables.FindIndex(x => x == 6);
                         tables.RemoveAt(index);
                         capacity += 6;
+                        partySize -= 6;
                     }
                 }
                 else
@@ -361,21 +390,23 @@ namespace TableReservation.Controllers
                         int index = tables.FindIndex(x => x == 2);
                         tables.RemoveAt(index);
                         capacity += 2;
+                        partySize -= 2;
                     }
                     else if (tables.Exists(x => x == 4))
                     {
                         int index = tables.FindIndex(x => x == 4);
                         tables.RemoveAt(index);
                         capacity += 4;
+                        partySize -= 4;
                     }
                     else
                     {
                         int index = tables.FindIndex(x => x == 6);
                         tables.RemoveAt(index);
                         capacity += 6;
+                        partySize -= 6;
                     }
                 }
-
             }
             return capacity;
         }
