@@ -92,6 +92,8 @@ namespace TableReservation.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ResDate, PartySize, CardNumber, CVV, month, year")] Reservation reservation)
         {
+            List<int> tables = new List<int>() { 2, 2, 2, 4, 4, 4, 6, 6, 6 };
+
             if (ModelState.IsValid)
             {
                 // restrict date and time
@@ -111,6 +113,7 @@ namespace TableReservation.Controllers
                     return View(reservation);
                 }
 
+
                 var endHour = reservation.ResDate.AddHours(1.5);
                 var startHour = reservation.ResDate.AddHours(-1.5);
 
@@ -128,7 +131,7 @@ namespace TableReservation.Controllers
 
                 
 
-                List<int> tables = new List<int>() { 2, 2, 2, 4, 4, 4, 6, 6, 6 };
+                
                 int total = tables.Sum();
                 System.Diagnostics.Debug.WriteLine(total);
                 int currentCapacity = 0;
@@ -156,16 +159,6 @@ namespace TableReservation.Controllers
                     _notfy.Information("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information", 3);
                     return View(reservation);
                 }
-
-                //if (reservation.ResDate.DayOfWeek == DayOfWeek.Saturday | reservation.ResDate.DayOfWeek == DayOfWeek.Sunday | reservation.ResDate.CompareTo == )
-                //{
-                //    _notfy.Information("Hold Fee Required For High Traffic Days", 5);
-                //    highTraffic = true;
-                //}
-                //else
-                //{
-                //    highTraffic = false;
-                //}
 
                 int prevCap = 0;
                 foreach (var i in prevRes)
@@ -311,6 +304,7 @@ namespace TableReservation.Controllers
 
                 if ((total - currentCapacity) < partySize)
                 {
+                    _notfy.Error("No reservations available for this time", 3);
                     return View(reservation);
                 }
                 else
