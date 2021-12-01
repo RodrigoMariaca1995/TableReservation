@@ -5,7 +5,26 @@
 <style>
     .top-container {
         text-align: center;
-        padding-top: 14rem;
+
+    }
+    .container {
+        display: flex;
+        padding: 1rem 0 1rem 0;
+        justify-content: left;
+    }
+
+    img {
+        max-width: 25%;
+        text-align: left;
+        display: flex;
+        justify-content: left;
+        border-radius: 40%;
+    }
+
+    .text {
+        font-size: 20px;
+        padding-left: 20px;
+        padding-top: 4rem;
     }
 </style>
 <head>
@@ -15,14 +34,22 @@
     <div class="top-container">
         <h1>Welcome To Our Restaurant</h1>
         <h4>Where Fine Dining Is Made Easy</h4>
-        
     </div>
-    <div>
-        <img src="~/images/guy.jpg" alt="guy" />
-        <img src="~/images/lady.jpg" alt="lady" />
-        <img src="~/images/happy-people.jpg" alt="happy" />
+    <div class="container">
+        <img class="img" src="~/images/guy.jpg" alt="guy" />
+        <h5 class="text">"Best. Restaurant. Ever." -John Winchester</h5>
     </div>
-    
+    <div class="container">
+        <img class="img" src="~/images/lady.jpg" alt="lady" />
+        <h5 class="text">"This experience was like...sooo amazing." -Ginger Winchester</h5>
+    </div>
+    <div class="container">
+        <img class="img" src="~/images/happy-people.jpg" alt="happy" />
+        <h5 class="text">
+            "I met the love of my life here." -Brad Winchester
+        </h5>
+    </div>
+
 </body>
 
  
