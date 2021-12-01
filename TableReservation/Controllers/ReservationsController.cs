@@ -153,7 +153,7 @@ namespace TableReservation.Controllers
 
                 if (result == 0 | result1 == 0 | result2 == 0 | result3 == 0 | result4 == 0 | reservation.ResDate.DayOfWeek == DayOfWeek.Sunday | reservation.ResDate.DayOfWeek == DayOfWeek.Saturday && reservation.CardNumber == null | reservation.CVV == null | reservation.month == null | reservation.year == null)
                 {
-                    _notfy.Information("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information.\nPlease note: A fee of up to 10 dollars may be applied in the case of no show.", 3);
+                    _notfy.Information("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information", 3);
                     return View(reservation);
                 }
 
@@ -175,7 +175,7 @@ namespace TableReservation.Controllers
 
                 if (prevCap > 100)
                 {
-                    _notfy.Error("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information.\nPlease note: A fee of up to 10 dollars may be applied in the case of no show.", 3);
+                    _notfy.Error("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information", 3);
                     return View(reservation);
                 }
                 if ((total - currentCapacity) < partySize)
@@ -283,7 +283,7 @@ namespace TableReservation.Controllers
 
                 if (prevCap > 100)
                 {
-                    _notfy.Error("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information.\nPlease note: A fee of up to 10 dollars may be applied in the case of no show.", 3);
+                    _notfy.Error("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information", 3);
                     return View(reservation);
                 }
 
@@ -305,7 +305,7 @@ namespace TableReservation.Controllers
 
                 if (result == 0 | result1 == 0 | result2 == 0 | result3 == 0 | result4 == 0 | reservation.ResDate.DayOfWeek == DayOfWeek.Sunday | reservation.ResDate.DayOfWeek == DayOfWeek.Saturday && reservation.CardNumber == null | reservation.CVV == null | reservation.month == null | reservation.year == null)
                 {
-                    _notfy.Information("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information.\nPlease note: A fee of up to 10 dollars may be applied in the case of no show.", 3);
+                    _notfy.Information("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information", 3);
                     return View(reservation);
                 }
 
