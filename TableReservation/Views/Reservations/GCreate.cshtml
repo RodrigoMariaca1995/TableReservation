@@ -6,9 +6,8 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Testing</h1>
+<h1>Create Your Reservation</h1>
 
-<h4>Reservation</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -44,7 +43,7 @@
                 <input asp-for="PartySize" class="form-control" />
                 <span asp-validation-for="PartySize" class="text-danger"></span>
             </div>
-            <h5>$10 hold fee if high traffic day</h5>
+            <h6>$10 hold fee required if high traffic day</h6>
             <div class="form-group" id="card-number-field">
                 <label asp-for="CardNumber" for="cardNumber">Card Number</label>
                 <input asp-for="CardNumber" type="text" class="form-control" id="cardNumber">
