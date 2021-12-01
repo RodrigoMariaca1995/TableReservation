@@ -94,15 +94,39 @@ namespace TableReservation.Controllers
         {
             if (ModelState.IsValid)
             {
-                
+                // restrict date and time
+                DateTime date1 = reservation.ResDate;
+                DateTime date2 = DateTime.Now;
+                int compareResult = DateTime.Compare(date1, date2);
+                int hourInt0to23 = date1.Hour;
+
+                if (compareResult < 0)
+                {
+                    _notfy.Information("Please enter a date in the future!", 5);
+                    return View(reservation);
+                }
+                if (hourInt0to23 < 9 || hourInt0to23 > 20)
+                {
+                    _notfy.Information("Please enter a time during opening hours (9 AM - 8 PM)", 5);
+                    return View(reservation);
+                }
+
                 var endHour = reservation.ResDate.AddHours(1.5);
                 var startHour = reservation.ResDate.AddHours(-1.5);
+
+                var prevDateS = reservation.ResDate.Date.AddYears(-1);
+                var prevDateE = reservation.ResDate.Date.AddYears(-1).AddDays(1);
 
                 var partySize = reservation.PartySize;
 
                 var restaurantCapacity = from res in _context.Reservations
                                          where res.ResDate > startHour && res.ResDate < endHour
                                          select res.TotalSeats;
+                var prevRes = from res in _context.Reservations
+                               where res.ResDate >= prevDateS && res.ResDate <= prevDateE
+                              select res.PartySize;
+
+                
 
                 List<int> tables = new List<int>() { 2, 2, 2, 4, 4, 4, 6, 6, 6 };
                 int total = tables.Sum();
@@ -127,9 +151,9 @@ namespace TableReservation.Controllers
                 int result3 = DateTime.Compare(newYears, reservation.ResDate.Date);
                 int result4 = DateTime.Compare(newYearsEve, reservation.ResDate.Date);
 
-                if (result == 0 | result1 == 0 | result2 == 0 | result3 == 0 | result4 == 0 | reservation.ResDate.DayOfWeek == DayOfWeek.Sunday | reservation.ResDate.DayOfWeek == DayOfWeek.Saturday)
+                if (result == 0 | result1 == 0 | result2 == 0 | result3 == 0 | result4 == 0 | reservation.ResDate.DayOfWeek == DayOfWeek.Sunday | reservation.ResDate.DayOfWeek == DayOfWeek.Saturday && reservation.CardNumber == null | reservation.CVV == null | reservation.month == null | reservation.year == null)
                 {
-                    _notfy.Information("Hold Fee Required For High Traffic Days", 5);
+                    _notfy.Information("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information", 3);
                     return View(reservation);
                 }
 
@@ -143,6 +167,17 @@ namespace TableReservation.Controllers
                 //    highTraffic = false;
                 //}
 
+                int prevCap = 0;
+                foreach (var i in prevRes)
+                {
+                    prevCap += i;
+                }
+
+                if (prevCap > 100)
+                {
+                    _notfy.Error("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information", 3);
+                    return View(reservation);
+                }
                 if ((total - currentCapacity) < partySize)
                 {
                     _notfy.Error("No reservations available for this time", 3);
@@ -202,9 +237,28 @@ namespace TableReservation.Controllers
 
             if (ModelState.IsValid)
             {
+                // restrict date and time
+                DateTime date1 = reservation.ResDate;
+                DateTime date2 = DateTime.Now;
+                int compareResult = DateTime.Compare(date1, date2);
+                int hourInt0to23 = date1.Hour;
+
+                if (compareResult < 0)
+                {
+                    _notfy.Information("Please enter a date in the future!", 5);
+                    return View(reservation);
+                }
+                if (hourInt0to23 < 9 || hourInt0to23 > 20)
+                {
+                    _notfy.Information("Please enter a time during opening hours (9 AM - 8 PM)", 5);
+                    return View(reservation);
+                }
 
                 var endHour = reservation.ResDate.AddHours(1.5);
                 var startHour = reservation.ResDate.AddHours(-1.5);
+
+                var prevDateS = reservation.ResDate.Date.AddYears(-1);
+                var prevDateE = reservation.ResDate.Date.AddYears(-1).AddDays(1);
 
                 var partySize = reservation.PartySize;
 
@@ -216,6 +270,22 @@ namespace TableReservation.Controllers
                 int total = tables.Sum();
                 System.Diagnostics.Debug.WriteLine(total);
                 int currentCapacity = 0;
+
+                var prevRes = from res in _context.Reservations
+                              where res.ResDate >= prevDateS && res.ResDate <= prevDateE
+                              select res.PartySize;
+
+                int prevCap = 0;
+                foreach (var i in prevRes)
+                {
+                    prevCap += i;
+                }
+
+                if (prevCap > 100)
+                {
+                    _notfy.Error("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information", 3);
+                    return View(reservation);
+                }
 
                 foreach (var i in restaurantCapacity)
                 {
@@ -233,9 +303,9 @@ namespace TableReservation.Controllers
                 int result3 = DateTime.Compare(newYears, reservation.ResDate.Date);
                 int result4 = DateTime.Compare(newYearsEve, reservation.ResDate.Date);
 
-                if (result == 0 | result1 == 0 | result2 == 0 | result3 == 0 | result4 == 0 | reservation.ResDate.DayOfWeek == DayOfWeek.Sunday | reservation.ResDate.DayOfWeek == DayOfWeek.Saturday)
+                if (result == 0 | result1 == 0 | result2 == 0 | result3 == 0 | result4 == 0 | reservation.ResDate.DayOfWeek == DayOfWeek.Sunday | reservation.ResDate.DayOfWeek == DayOfWeek.Saturday && reservation.CardNumber == null | reservation.CVV == null | reservation.month == null | reservation.year == null)
                 {
-                    _notfy.Information("Hold Fee Required For High Traffic Days", 5);
+                    _notfy.Information("You have selected a high traffic day. A $10 fee is required to create a reservation. Please enter your credit card information", 3);
                     return View(reservation);
                 }
 
@@ -272,27 +342,30 @@ namespace TableReservation.Controllers
         public int TablesReserved(ref List<int> tables, int partySize)
         {
             int capacity = 0;
-            while(capacity < partySize)
+            while (partySize > 0)
             {
-                if(partySize > 4)
+                if (partySize > 4)
                 {
                     if (tables.Exists(x => x == 6))
                     {
                         int index = tables.FindIndex(x => x == 6);
                         tables.RemoveAt(index);
                         capacity += 6;
+                        partySize -= 6;
                     }
                     else if (tables.Exists(x => x == 4))
                     {
                         int index = tables.FindIndex(x => x == 4);
                         tables.RemoveAt(index);
                         capacity += 4;
+                        partySize -= 4;
                     }
                     else
                     {
                         int index = tables.FindIndex(x => x == 2);
                         tables.RemoveAt(index);
                         capacity += 2;
+                        partySize -= 2;
                     }
                 }
                 else if (partySize > 2)
@@ -302,18 +375,21 @@ namespace TableReservation.Controllers
                         int index = tables.FindIndex(x => x == 4);
                         tables.RemoveAt(index);
                         capacity += 4;
+                        partySize -= 4;
                     }
                     else if (tables.Exists(x => x == 2))
                     {
                         int index = tables.FindIndex(x => x == 2);
                         tables.RemoveAt(index);
                         capacity += 2;
+                        partySize -= 2;
                     }
                     else
                     {
                         int index = tables.FindIndex(x => x == 6);
                         tables.RemoveAt(index);
                         capacity += 6;
+                        partySize -= 6;
                     }
                 }
                 else
@@ -323,21 +399,23 @@ namespace TableReservation.Controllers
                         int index = tables.FindIndex(x => x == 2);
                         tables.RemoveAt(index);
                         capacity += 2;
+                        partySize -= 2;
                     }
                     else if (tables.Exists(x => x == 4))
                     {
                         int index = tables.FindIndex(x => x == 4);
                         tables.RemoveAt(index);
                         capacity += 4;
+                        partySize -= 4;
                     }
                     else
                     {
                         int index = tables.FindIndex(x => x == 6);
                         tables.RemoveAt(index);
                         capacity += 6;
+                        partySize -= 6;
                     }
                 }
-
             }
             return capacity;
         }
@@ -442,12 +520,6 @@ namespace TableReservation.Controllers
         {
             return _context.Reservations.Any(e => e.ResId == id);
         }
-
-        
-
-        
-
-
 
     }
 }

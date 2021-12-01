@@ -8,16 +8,16 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Index</h1>
+<h1>Reservations</h1>
 
 <p>
     @if (SignInManager.IsSignedIn(User))
     {
-        <a asp-action="Create">Create New</a>
+        <a asp-action="Create">Create New Reservation</a>
     }
     else
     {
-        <a asp-action="GCreate">Create New</a>
+        <a asp-action="GCreate">Create New Reservation</a>
     }
 </p>
 @if (!SignInManager.IsSignedIn(User))

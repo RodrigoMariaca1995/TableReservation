@@ -2,6 +2,72 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="top-container" >
-    <h2>Hello</h2>
-</div>
+<style>
+    .top-container {
+        text-align: center;
+
+    }
+    .container {
+        display: flex;
+        padding: 1rem 0 1rem 0;
+        justify-content: left;
+    }
+
+    .img {
+        max-width: 25%;
+        text-align: left;
+        display: flex;
+        justify-content: left;
+        border-radius: 40%;
+    }
+
+    .text {
+        font-size: 20px;
+        padding-left: 20px;
+        padding-top: 4rem;
+    }
+    .restaurant {
+        padding: 4rem 0 2rem 13rem;
+    }
+    .rest-img {
+        width: 80%;
+        justify-content: center;
+        text-align: center;
+        border: 5px solid #555;
+        border-radius: 5%;
+    }
+    h2 {
+        text-align: center;
+        padding-top: 4rem;
+    }
+</style>
+<head>
+    
+</head>
+<body>
+    <div class="top-container">
+        <h1>Welcome To Our Restaurant</h1>
+        <h4>Where Fine Dining Is Made Easy</h4>
+    </div>
+    <div class="restaurant">
+        <img class="rest-img" src="~/images/restaurant front.jpg" alt="rest" />
+    </div>
+    <h2>Testimonials</h2>
+    <div class="container">
+        <img class="img" src="~/images/guy.jpg" alt="guy" />
+        <h5 class="text">"Best. Restaurant. Ever." -John Winchester</h5>
+    </div>
+    <div class="container">
+        <img class="img" src="~/images/lady.jpg" alt="lady" />
+        <h5 class="text">"This experience was like...sooo amazing." -Ginger Winchester</h5>
+    </div>
+    <div class="container">
+        <img class="img" src="~/images/happy-people.jpg" alt="happy" />
+        <h5 class="text">
+            "I met the love of my life here." -Brad Winchester
+        </h5>
+    </div>
+
+</body>
+
+ 
